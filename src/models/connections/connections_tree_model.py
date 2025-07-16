@@ -73,25 +73,19 @@ class ConnectionTreeModel(QAbstractItemModel):
         self.dataChanged.emit(start_index, end_index, [
                               Qt.ItemDataRole.DisplayRole])
 
-    def addNewConnection(self, name, host, port, user, password, description, parent: Optional[TreeNode] = None):
-        if not name or not host or not user:
-            return None
-
-        if parent is None:
-            parent = self._root_node
-
+    def addNewConnection(self, name="", parent: Optional[TreeNode] = None):
         new_connection = Connection(
             name=name,
-            host=host,
-            port=port,
-            user=user,
-            password=password,
-            description=description,
+            host="",
+            port=0,
+            user="",
+            password="",
+            description="",
             parent=parent
         )
 
         self._root_node.appendChild(new_connection)
-        new_index = self.index(new_connection.row(), 0, QModelIndex())
-        self.dataChanged.emit(new_index, new_index, [
+        new_index = self.index(1, 1, QModelIndex())
+        self.dataChanged.emit(parent, new_index, [
                               Qt.ItemDataRole.DisplayRole])
         return new_connection

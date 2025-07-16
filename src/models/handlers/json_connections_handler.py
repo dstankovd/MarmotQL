@@ -4,17 +4,20 @@ from src.models.entities.connections import Connection, Folder
 
 
 class JsonDataHandler:
-    def load_from_file(self, filepath):
+    _root_item: Folder
+
+    def __init__(self, json_file):
+        self.json_file = json_file
+
+    def load(self):
         try:
-            with open(filepath, 'r') as f:
+            with open(self.json_file, 'r') as f:
                 data = json.load(f)
         except (FileNotFoundError, json.JSONDecodeError):
             return Folder("Connections")
 
-        root_item = Folder("Connections")
-        self._build_tree(data, root_item)
-
-        return root_item
+        self._root_item = Folder("Connections")
+        self._build_tree(data, self._root_item)
 
     def _build_tree(self, nodes_data, parent_item):
         for node_dict in nodes_data:
@@ -33,9 +36,9 @@ class JsonDataHandler:
 
             parent_item.appendChild(new_item)
 
-    def save_to_file(self, root_node, filepath):
+    def save(self, root_node):
         data = self._serialize_tree(root_node)
-        with open(filepath, 'w') as f:
+        with open(self.json_file, 'w') as f:
             json.dump(data, f, indent=4)
 
     def _serialize_tree(self, node):
@@ -56,3 +59,6 @@ class JsonDataHandler:
             output.append(node_dict)
 
         return output
+
+    def root_item(self):
+        return self._root_item

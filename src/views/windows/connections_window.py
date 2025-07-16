@@ -1,5 +1,4 @@
-from PySide6.QtCore import QSize, Qt
-from PySide6.QtWidgets import QMainWindow, QTreeView, QSplitter,  QMessageBox, QVBoxLayout, QWidget, QPushButton
+from PySide6.QtWidgets import QMainWindow, QTreeView, QSplitter,  QVBoxLayout, QWidget, QPushButton
 from PySide6.QtGui import QAction
 
 from src.models.connections.connections_tree_model import ConnectionTreeModel
@@ -10,15 +9,15 @@ from src.views.widgets.connections.connections_tree import ConnectionsTree
 
 
 class ConnectionsWindow(QMainWindow):
-    JSON_FILE = "connections.json"
-
-    def __init__(self):
+    def __init__(self, connections_manager):
         super().__init__()
+
+        self.connections_manager = connections_manager
+
         self.setWindowTitle("SQL Connections Viewer")
         self.resize(800, 600)
-        self.handler = JsonDataHandler()
-        root_item = self.handler.load_from_file(self.JSON_FILE)
-        self.tree_model = ConnectionTreeModel(root_item)
+        self.tree_model = ConnectionTreeModel(
+            self.connections_manager.root_item())
         splitter = QSplitter(self)
         self.setCentralWidget(splitter)
         self.tree_view = QTreeView(splitter)
@@ -31,8 +30,7 @@ class ConnectionsWindow(QMainWindow):
         self.left_layout.addWidget(self.tree_view)
         new_connection_button = QPushButton("New Connection", self)
         new_connection_button.setShortcut("Ctrl+N")
-        new_connection_button.clicked.connect(
-            self.connection_form.clear_form)
+        new_connection_button.clicked.connect(self.on_new_connection_clicked)
         self.left_layout.addWidget(new_connection_button)
         left_widget = QWidget()
         left_widget.setLayout(self.left_layout)
@@ -44,6 +42,7 @@ class ConnectionsWindow(QMainWindow):
         self.tree_view.selectionModel().currentChanged.connect(
             self.on_tree_selection_changed)
 
+        self.tree_model.dataChanged.connect(self.save_data)
         self._create_menus()
 
     def on_tree_selection_changed(self, current_index, previous_index):
@@ -52,6 +51,19 @@ class ConnectionsWindow(QMainWindow):
             self.connection_form.set_connection(item, current_index)
         else:
             self.connection_form.clear_form()
+
+    def on_new_connection_clicked(self):
+        selected_index = self.tree_view.currentIndex()
+
+        if not selected_index.isValid():
+            parent = self.tree_model._root_node
+        else:
+            parent = selected_index.internalPointer()
+            if isinstance(parent, Connection):
+                parent = parent.parentItem()
+
+        self.tree_model.addNewConnection(name="New Connection", parent=parent)
+        self.connection_form.clear_form()
 
     def _create_menus(self):
         file_menu = self.menuBar().addMenu("&File")
@@ -62,6 +74,4 @@ class ConnectionsWindow(QMainWindow):
 
     def save_data(self):
         root_node = self.tree_model._root_node
-        self.handler.save_to_file(root_node, self.JSON_FILE)
-        QMessageBox.information(
-            self, "Success", f"Data saved to {self.JSON_FILE}")
+        self.connections_manager.save(root_node)

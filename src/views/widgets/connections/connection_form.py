@@ -55,18 +55,7 @@ class ConnectionForm(QWidget):
 
     def _save_changes(self):
         if not self.current_connection:
-            self.model.addNewConnection(
-                self.name_edit.text(),
-                self.host_edit.text(),
-                self.port_edit.value(),
-                self.user_edit.text(),
-                self.password_edit.text(),
-                self.description_edit.text(),
-                self.current_index if self.current_index else None
-            )
-            QMessageBox.information(self, "Success", "New connection added.")
             return
-
         self.current_connection.setName(self.name_edit.text())
         self.current_connection.host = self.host_edit.text()
         self.current_connection.port = self.port_edit.value()
