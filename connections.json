@@ -1,0 +1,11 @@
+[
+    {
+        "name": "asd",
+        "type": "connection",
+        "host": "123",
+        "port": 2312,
+        "user": "123",
+        "password": "121",
+        "description": "qqq"
+    }
+]
