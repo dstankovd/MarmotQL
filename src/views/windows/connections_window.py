@@ -17,7 +17,7 @@ class ConnectionsWindow(QMainWindow):
         self.setWindowTitle("SQL Connections Viewer")
         self.resize(800, 600)
         self.tree_model = ConnectionTreeModel(
-            self.connections_manager.root_item())
+            self.connections_manager.root_item)
         splitter = QSplitter(self)
         self.setCentralWidget(splitter)
         self.tree_view = QTreeView(splitter)
@@ -32,6 +32,7 @@ class ConnectionsWindow(QMainWindow):
         new_connection_button.setShortcut("Ctrl+N")
         new_connection_button.clicked.connect(self.on_new_connection_clicked)
         self.left_layout.addWidget(new_connection_button)
+        self.left_layout.setSpacing(10)
         left_widget = QWidget()
         left_widget.setLayout(self.left_layout)
 

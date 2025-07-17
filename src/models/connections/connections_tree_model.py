@@ -45,8 +45,17 @@ class ConnectionTreeModel(QAbstractItemModel):
     def columnCount(self, parent: "QModelIndex | QPersistentModelIndex" = QModelIndex()):
         return 2
 
+    def flags(self, index: QModelIndex | QPersistentModelIndex):
+        if not index.isValid():
+            return Qt.ItemFlag.ItemIsEnabled
+
+        return super().flags(index) | Qt.ItemFlag.ItemIsEditable
+
     def data(self, index, role: int = Qt.ItemDataRole.DisplayRole):
         if not index.isValid():
+            return None
+
+        if role != Qt.ItemDataRole.DisplayRole and role != Qt.ItemDataRole.EditRole:
             return None
 
         item = index.internalPointer()
@@ -57,6 +66,19 @@ class ConnectionTreeModel(QAbstractItemModel):
                 return item.typeInfo()
 
         return None
+
+    def setData(self, index: QModelIndex | QPersistentModelIndex, value, role: int = Qt.ItemDataRole.EditRole):
+        if not index.isValid() or role != Qt.ItemDataRole.EditRole:
+            return False
+
+        item = index.internalPointer()
+        if index.column() == 0:
+            item.setName(value)
+        elif index.column() == 1:
+            item.setTypeInfo(value)
+
+        self.dataChanged.emit(index, index, [role])
+        return True
 
     def headerData(self, section: int, orientation: Qt.Orientation, role: int = Qt.ItemDataRole.DisplayRole):
         if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
